@@ -44,20 +44,17 @@ Upon payment, the user is redirected to domain.TLD/orders/preimage. They SHOULD 
 
 As a side note, we need a separate script that culls instances. Instances should have a expired_after date upon which to make a decision. the roygbiv down script should be executed, then the VM turned off and deleted. Docker vol should remain.
 
-
-
 # Architecture Diagram
 
-
+TODO
 
 # Development Environment
 
 Backend development requires this repo and a local docker engine. Debian-based is usually best.
 
-https://github.com/farscapian/roygbiv-stack
+git clone --recurse-submodules https://github.com/farscapian/roygbiv-stack ~/git/tabconf2023
 
-And checkout the tabconf2023 branch.
-
+And checkout the `tabconf2023` branch.
 
 # Future work
 
