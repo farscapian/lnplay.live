@@ -5,6 +5,7 @@ This is what we intend to accomplish as a MINIMUM VIABLE PRODUCT for the tabconf
 
 The front-end is a [lnmessage-enabled](https://github.com/aaronbarnardsound/lnmessage) PWA that interfaces with a backend core lightning node (CLN) over the `--experimental-websocket-port` (HTTP for local, 443/HTTPS/TLS-1.3 for remote hosts). Embedded in the front-end code is a well-known rune that authenticates client requests to the back end CLN node. People who visit `lnplay.live` will see information about the project as well as be given an opportunity to purchase (via lightning-only) an ephemeral regtest lightning environment that can be used for small bitcoin meetups, bitcoin conferences, or orange-pilling your family.
 
+The front-end application SHOULD accept a list of BOLT12 offers at build-time if possible.
 ## Product Definition
 
 The Product Definition is shown below.
@@ -17,15 +18,13 @@ The Product Definition is shown below.
 |D|64|OPTIONAL|
 
 For the MVP, the backend will CALCULATE the expiration date of deployed environment based on the AMOUNT_PAID. Invoices associated with a particular BOLT12 Product SKU determines the CLN_COUNT (and thus VM sizing). Product SKUs are represented by BOLT12 offers. These BOLT12 offers get embedded into the front-end and are used to fetch BOLT11 invoices from the backend CLN node.
-# lnplay-backend [RESPONSIBILITY: farscapian, WHO_ELSE]
+# lnplay-backend [RESPONSIBILITY: farscapian, etc]
 
 The backend consists of the following efforts:
 
 ## Infrastructure Requirements
 
 1. Stand up a LXD cluster for providing compute, memory, and storage for the that exposes an LXD interface on a restricted port. The LXC client in the provisioning plugin accesses this service to provision VMs.
-
-2. A CLN node listening on the experimental websocket port.
 
 3. A rune needs to be issued on this CLN node in accordance with least privilege and should be rate-limited. This rune gets embedded in the front-end for authenticating client requests. Method authoriation should be based on WHITELIST with the following method: `fetchinvoice` and `waitinvoice`.
 
