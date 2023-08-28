@@ -9,8 +9,6 @@ The front-end is a [lnmessage-enabled](https://github.com/aaronbarnardsound/lnme
 
 The Product Definition is shown below.
 
-`NOTE: The expiration date of the environment is CALCULATED by the backend based on the AMOUNT_PAID and is authoritative.`
-
 |PRODUCT|CLN_COUNT|REQUIRED/OPTIONAL for tabconf hackathon|
 |---|---|---|
 |A|8|REQUIRED|
@@ -18,7 +16,7 @@ The Product Definition is shown below.
 |C|32|OPTIONAL|
 |D|64|OPTIONAL|
 
-`INFO: For the MVP, the backend CALCULATEs the expiration date of deployed environment based on the AMOUNT_PAID. Invoice associated with a particular BOLT12 Product SKU determines the CLN_COUNT (and thus determines VM sizing). Product SKUs are represented by BOLT12 offers. These BOLT12 offers get embedded into the front-end and are used to fetch BOLT11 invoices from the backend CLN node.`
+For the MVP, the backend will CALCULATE the expiration date of deployed environment based on the AMOUNT_PAID. Invoices associated with a particular BOLT12 Product SKU determines the CLN_COUNT (and thus VM sizing). Product SKUs are represented by BOLT12 offers. These BOLT12 offers get embedded into the front-end and are used to fetch BOLT11 invoices from the backend CLN node.
 # lnplay-backend [RESPONSIBILITY: farscapian, WHO_ELSE]
 
 The backend consists of the following efforts:
