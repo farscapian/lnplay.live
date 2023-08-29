@@ -26,18 +26,16 @@ The backend consists of the following efforts:
 
 1. Stand up a LXD cluster for providing compute, memory, and storage for the that exposes an LXD interface on a restricted port. The LXC client in the provisioning plugin accesses this service to provision VMs.
 
-3. A rune needs to be issued on this CLN node in accordance with least privilege and should be rate-limited. This rune gets embedded in the front-end for authenticating client requests. Method authoriation should be based on WHITELIST with the following method: `fetchinvoice` and `waitinvoice`.
+3. A rune needs to be issued on this CLN node in accordance with least privilege and should be rate-limited (admin rune OK for demo). This rune gets embedded in the front-end for authenticating client requests. Method authorization should be based on WHITELIST with the following method: [`fetchinvoice`](https://docs.corelightning.org/reference/lightning-fetchinvoice) and [`waitinvoice`](https://docs.corelightning.org/reference/lightning-waitinvoice).
 
 4. The CLN node SHALL run a bash plugin that does the following:  
-  a) a method that that gets [executed whenever a payment is received](https://docs.corelightning.org/docs/event-notifications). The plugin will determine if the payment is associated with known BOLT12 offers representing product SKUs (defined below).
-     i) spinning up a new VM on a remote LXD cluster using Sovereign Stack and 
+  a) a method that that gets [executed whenever a payment is received](https://docs.corelightning.org/docs/event-notifications). The plugin will determine if the payment is associated with known BOLT12 offers representing product SKUs. If indeed it does, the following occurs:
+     i) the plugin will spin up a new VM on a remote LXD cluster (i.e., remote) using [Sovereign Stack](https://www.sovereign-stack.org/). The LXD remote is defined by environment variables passed to the CLN instance at runtime. 
      ii) deploying roygbiv-stack to it in accordance with the specification submitted by the customer. As a last step, the function stores the connection strings in the CLN database as a JSON structure.
   c) an rpcmethod that allows the web app to check on the status of their order. This method would take as an argument the payment preimage and return the JSON structure stored in the CLN database for the order. The web app would then display the information returned from the call: 1 the connection strings (REQUIRED) and 2) a PDF with QR representations of the connections.
 
 5. Stand up a VM in AWS that will host the `lnplay.live` website. That specific deployment will have 
 5. The front-end web app will need to be dockerized and an option added in ROYGBIV-stack for deploying the web-UI at the root of the app.
-
-The BOLT11 offer may be a prism endpoint.
 
 Upon payment, the user is redirected to domain.TLD/orders/preimage. They SHOULD be directed to store the URL in their in their password manager so they can reference order later. 
 
