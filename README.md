@@ -28,13 +28,13 @@ The backend consists of the following efforts:
 
 ## infrastructure
 
-Before the hackathon, a LXD cluster providing compute, memory, and storage will be provisioned and accessible at `backend.lnplay.live:8443` [LXD API](https://documentation.ubuntu.com/lxd/en/latest/search/?q=API&check_keywords=yes&area=default) (access is IP white-listed). The LXC client in the provisioning plugin accesses this service to create projects, provision VMs, and deploy `lnplay`. This should be in place BEFORE the hackathon.
+Before the hackathon, a LXD cluster providing compute, memory, and storage will be provisioned and accessible at `backend.lnplay.live:8443` [LXD API](https://documentation.ubuntu.com/lxd/en/latest/search/?q=API&check_keywords=yes&area=default) (access is IP white-listed). The LXC client in the provisioning plugin accesses this service to create projects, provision VMs, and deploy [`lnplay`](https://github.com/farscapian/lnplay/tree/tabconf). This should be in place BEFORE the hackathon.
 
 ## CLN Provisioning Plugin
 
 A cln plugin written in bash with two primary functions:  
   
-  a) an event that that gets [executed whenever a BOLT11 invoice is paid](https://docs.corelightning.org/docs/event-notifications). The plugin will determine if the payment is associated with known BOLT12 Product Offer ([example](https://github.com/daGoodenough/bolt12-prism/blob/main/prism-plugin.py)) representing product SKUs. If it is, the following occurs:
+  a) code that that gets [executed whenever a BOLT11 invoice is paid](https://docs.corelightning.org/docs/event-notifications). The plugin will determine if the payment is associated with known BOLT12 Product Offer ([example](https://github.com/daGoodenough/bolt12-prism/blob/main/prism-plugin.py)) representing product SKUs. If it is, the following occurs:
 
      i) when the plugin runs for the first time, there may be no remotes available. These are passed in by setting environment variables and get created before the plugin continues. So a new remote gets created and the LXD client is switched to it.
      ii) the plugin will create a new LXD project and switch to it. The project name includes the expiration date (in unix timestamp).
@@ -59,11 +59,11 @@ Each LXD project name includes the expiration date (in UNIX timestamp). So, a sc
 
 TODO
 
-# Backend Development Environment
+# Development Environment
 
-Front-end developers can develop however they want. The easiest solution is just running `lnplay` locally on your dev machine which exposes 5 core lightning nodes to your localhost (`127.0.0.1:6001-6006`)
+Front-end developers can develop however they want. The easiest solution is just running `lnplay` locally on your dev machine which exposes 5 core lightning nodes to your localhost (`127.0.0.1:6001-6006/websocket`).
 
-Backend development requires the following repo and a local docker engine. Debian-based is usually best. Recommend to `git clone --recurse-submodules https://github.com/farscapian/lnplay ~/git/lnplay`. During the hackathon we'll be working on the `tabconf2023` branch.
+Backend development requires the following repo and a local docker engine. To get the code run `git clone --recurse-submodules https://github.com/farscapian/lnplay ~/git/lnplay`. We will be working on the `tabconf` branch. Before making commits, do a `git pull`, then make your commits, then `git push` and let everyone know you made changes to `tabconf` branch.
 
 # Future work
 
