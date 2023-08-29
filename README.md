@@ -59,9 +59,11 @@ Each LXD project name includes the expiration date (in UNIX timestamp). So, a sc
 
 TODO
 
-# Development Environment
+# Backend Development Environment
 
-Backend development requires the following repo and a local docker engine. Debian-based is usually best. Recommend to `git clone --recurse-submodules https://github.com/farscapian/roygbiv-stack ~/git/tabconf2023` then checkout the `tabconf2023` branch.
+Front-end developers can develop however they want. The easiest solution is just running `lnplay` locally on your dev machine which exposes 5 core lightning nodes to your localhost (`127.0.0.1:6001-6006`)
+
+Backend development requires the following repo and a local docker engine. Debian-based is usually best. Recommend to `git clone --recurse-submodules https://github.com/farscapian/lnplay ~/git/lnplay`. During the hackathon we'll be working on the `tabconf2023` branch.
 
 # Future work
 
