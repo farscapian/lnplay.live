@@ -10,7 +10,7 @@ This is what we intend to accomplish as a MINIMUM VIABLE PRODUCT for the tabconf
 |C|32|OPTIONAL|
 |D|64|OPTIONAL|
 
-For the MVP, the backend will CALCULATE the expiration date of the deployment based on the AMOUNT_PAID (REQUIRED). Invoices associated with a particular BOLT12 Product SKU determines the CLN_COUNT (and thus VM sizing). These BOLT12 offers get embedded into the front-end during build time and are used internally only (i.e., the user never sees the BOLT12 offer). They are used to fetch BOLT11 invoices (via [`fetchinvoice`](https://docs.corelightning.org/reference/lightning-fetchinvoice)) from the backend CLN node, which are then shown to the user at checkout.
+For the MVP, the backend will CALCULATE the expiration date of the deployment based on the AMOUNT_PAID (REQUIRED). Invoices associated with a particular BOLT12 Product SKU determines the CLN_COUNT (and thus VM sizing). These BOLT12 offers get embedded into the front-end during build time and are used internally only (i.e., the user never sees the BOLT12 offer). These Product Offers are used to fetch BOLT11 invoices using [`fetchinvoice`](https://docs.corelightning.org/reference/lightning-fetchinvoice)) from the backend CLN node, which are then shown to the user during checkout. The `[quantity]` field SHOULD be used to used to represent number of hours the instance should be running (MINIMUM 3 hours). Product customizations (OPTIONAL FOR MVP) may be passed to the provisioning script using the [payer_note] field in the transaction.
 
 # lnplay-frontend
 
@@ -57,17 +57,18 @@ Each LXD project name includes the expiration date (in UNIX timestamp). So, a sc
 
 # Architecture Diagram
 
-TODO
+
 
 # Development Environment
 
-Front-end developers can develop however they want. The easiest solution is just running `lnplay` locally on your dev machine which exposes 5 core lightning nodes to your localhost (`127.0.0.1:6001-6006/websocket`).
+Front-end developers can develop however they want. Polar is a good option usually for single-node setups. Another solution is running `lnplay` locally on your dev machine which exposes 5 core lightning nodes to your localhost (`ws://127.0.0.1:6001-6006`).
 
-Backend development requires the following repo and a local docker engine. To get the code run `git clone --recurse-submodules https://github.com/farscapian/lnplay ~/git/lnplay`. We will be working on the `tabconf` branch. Before making commits, do a `git pull`, then make your commits, then `git push` and let everyone know you made changes to `tabconf` branch.
+Backend development requires `lnplay` deployed to a local docker engine. To get the code, run `git clone --recurse-submodules https://github.com/farscapian/lnplay ~/lnplay`. We will be working on the `tabconf` branch. Before making commits, do a `git pull`, then make your commits, then `git push` and let everyone know you made changes to `tabconf` branch.
 
 # Future work
 
-* Implement [lightningaddress for bolt12](https://github.com/rustyrussell/bolt12address) on the backend, allowing the front-end to dynamically fetch the BOLT12 product offers using names (e.g., product-a@domain.tld).
+* Implement [lightningaddress for bolt12](https://github.com/rustyrussell/bolt12address) on the backend, allowing the front-end to dynamically fetch the BOLT12 product offers using names (e.g., product-a@domain.tld). This results in the front-end being completely decoupled from the backend.
 * Generate QR codes from connnection strings, provided as a PDF.
 * Allow customer to submit custom branding for wallet and QR codes. 
 * monitor the load of your various remotes so the front-end webapp can display product availability.
+* Initial distribution of regtest funds could be configurable. Currently, we give each CLN node 100,000,000 sats (i.e., 1 rBTC). But we could also replicate the fiat system, or have a poisson distribution, etc. We could also distribute coins in a random way to simulate coin distribution in bitcoin.
