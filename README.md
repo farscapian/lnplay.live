@@ -58,7 +58,7 @@ Each LXD project name includes the expiration date (in UNIX timestamp). So, a sc
 
 # Architecture Diagram
 
-![lnplay.live tabconf architecture](./lnplay-live-architecture.drawio1.png)
+![lnplay.live tabconf architecture](./lnplay-live-architecture.drawio.png)
 
 # Development Environment
 
