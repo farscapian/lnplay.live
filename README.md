@@ -1,29 +1,34 @@
 # lnplay.live requirements
 
-This is what we intend to accomplish as a MINIMUM VIABLE PRODUCT for the tabconf-2023 hackathon. `lnplay.live` is a public website allowing anyone to purchase (via lightning-only) an ephemeral regtest lightning environment that can be used to educate small bitcoin meetups, bitcoin conference attendees, board-rooms, etc. It's a fun an educational experience helpful in orange-pilling your target audience.
-# lnplay-frontend [lead: banterpanther]
-## Product Definition (owner: banterpanther)
+This is what we intend to accomplish as a MINIMUM VIABLE PRODUCT for the tabconf-2023 hackathon. `lnplay.live` is a public website allowing anyone to purchase (via lightning-only) an ephemeral regtest lightning environment that can be used to educate bitcoin meetups, bitcoin conferences, board-rooms, etc. It's a fun an educational experience helpful in orange-pilling your target audience.
 
-|PRODUCT_SKU|CLN_COUNT|REQUIRED/OPTIONAL|
-|---|---|---|
-|A|8|REQUIRED|
-|B|16|OPTIONAL|
-|C|32|OPTIONAL|
-|D|64|OPTIONAL|
+# Product Definition
 
-Each product is defined by a BOLT12 offer which is used to fetch invoices. Paid invoices associated with a particular BOLT12 Product SKU determines the CLN_COUNT (and thus VM sizing). These BOLT12 "Product Offers" get embedded into the front-end during build time and are used internally only (i.e., the user never sees the BOLT12 offer). Product Offers are only used to fetch (with [`fetchinvoice`](https://docs.corelightning.org/reference/lightning-fetchinvoice)) BOLT11 invoices from the backend CLN node. 
+|PRODUCT_SKU|CLN_COUNT|PRICE (sats/node/hour)|MAX_QTY|REQUIRED/OPTIONAL|
+|---|---|---|---|---|
+|A|8|5 sats|1344|REQUIRED|
+|B|16|6 sats|2688|OPTIONAL|
+|C|32|7 sats|5376|OPTIONAL|
+|D|64|8 sats|10752|OPTIONAL|
 
-Note: The `[quantity]` field SHOULD be used and is an integer representing ONE HOUR (recommended minimum is three hours). Product customizations (OPTIONAL FOR MVP) MAY be passed to the provisioning script using the [payer_note] field in the transaction (JSON expected).
+Each product is defined by a BOLT12 offer which is used to [fetch](https://docs.corelightning.org/reference/lightning-fetchinvoice) BOLT11 invoices used during checkout. Paid invoices associated with a particular BOLT12 Product SKU determines the CLN_COUNT (and thus VM sizing). These BOLT12 "Product Offers" get embedded into the front-end during build time and are used internally only (i.e., the user never sees the BOLT12 offer).
 
-The front-end is a [lnmessage-enabled](https://github.com/aaronbarnardsound/lnmessage) PWA that interfaces with a backend core lightning node (CLN) over the `--experimental-websocket-port` (HTTP for local, 443/HTTPS/TLS-1.3 for remote hosts). Embedded in the front-end code is a well-known rune that authenticates client requests to the CLN node. The front-end application SHOULD accept this rune AND a list of BOLT12 offers at build-time if possible (see future work). Each BOLT12 Offer represents a Product SKU.
+Note: Since the Product offers are issued using the [quantity_max] field, the [amount] in the `fetchinvoice` command must be multiplied accordingly.
 
 OPTIONAL Feature - When the connection information becomes available to the web app, it would be nice for the front-end web app to generate QR codes and or PDF printouts.  They SHOULD be directed to store the URL in their in their password manager so they can reference the order later. 
 
+# lnplay-frontend [captain: banterpanther]
+
+The front-end is a [lnmessage-enabled](https://github.com/aaronbarnardsound/lnmessage) PWA that interfaces with a backend core lightning node (CLN) over the `--experimental-websocket-port` (HTTP for local, 443/HTTPS/TLS-1.3 for remote hosts). Embedded in the front-end code is a well-known rune that authenticates client requests to the CLN node. The front-end application SHOULD accept this rune AND a list of BOLT12 offers at build-time if possible (see future work).
+
+## Copy
+
+The frontend should have a section which describes the product offering and convinces potential customers to buy.
 ## Rune
 
 A rune needs to be issued by a backend CLN node in accordance with least privilege and should be rate-limited (admin rune OK for demo). This rune gets embedded in the front-end and is used for authenticating client requests to the backend websocket endpoint. Method authorization should be based on WHITELIST with the following methods: [`fetchinvoice`](https://docs.corelightning.org/reference/lightning-fetchinvoice) and [`waitinvoice`](https://docs.corelightning.org/reference/lightning-waitinvoice), and `lnplaylive-orderstatus`.
 
-# lnplay-backend
+# lnplay-backend [captain: farscapian]
 
 The backend consists of the following efforts:
 
@@ -50,11 +55,25 @@ The front-end web app will need to be dockerized and an option added `DEPLOY_LNP
 
 ## Hosting for `lnplay.live` (REQUIRED)
 
-To serve the `lnplay.live` web app to the public, a VM will be created on AWS and `lnplay` will deployed to the VM with `DEPLOY_LNPLAYLIVE_FRONTEND=true`.
+To serve the `lnplay.live` web app to the public, a VM will be created on AWS and `lnplay` will deployed to the VM with `DEPLOY_LNPLAYLIVE_FRONTEND=true`. A backend deployment is not required for this function and SHOULD NOT be deployed.
+
+### Issuing BOLT12 Offers (REQUIRED)
+
+When creating the [BOLT12 Product Offers](https://docs.corelightning.org/reference/lightning-offer), the amount should be set to the cost (in sats) per node per hour as specified in the Product Definition.
+
+Note: The `[quantity]` field SHOULD be used and is an integer representing ONE HOUR (recommended minimum is three hours). Product customizations (OPTIONAL FOR MVP) MAY be passed to the provisioning script using the [payer_note] field in the transaction (JSON expected).
 
 ## A script that culls instances (OPTIONAL)
 
 Each LXD project name includes the expiration date (in UNIX timestamp). So, a script needs to be created that runs every 10 minutes that identifies expired projects and prunes them from the LXD cluster. This involves de-provisioning the `lnplay` instance by running [`ss-down`](https://www.sovereign-stack.org/ss-down/).
+
+## backend nodes
+
+### Issuing BOLT12 Product Offers
+
+Here's how you create the BOLT12 Product Offer for Product-A, which costs 5sats/node/hour.
+
+`./lightning-cli.sh -k offer amount=5sat description="lnplay.live - 8 Node Environment" quantity_max=1344  issuer="lnplay.live"`
 
 # Architecture Diagram
 
