@@ -63,17 +63,13 @@ When creating the [BOLT12 Product Offers](https://docs.corelightning.org/referen
 
 Note: The `[quantity]` field SHOULD be used and is an integer representing ONE HOUR (recommended minimum is three hours). Product customizations (OPTIONAL FOR MVP) MAY be passed to the provisioning script using the [payer_note] field in the transaction (JSON expected).
 
-## A script that culls instances (OPTIONAL)
-
-Each LXD project name includes the expiration date (in UNIX timestamp). So, a script needs to be created that runs every 10 minutes that identifies expired projects and prunes them from the LXD cluster. This involves de-provisioning the `lnplay` instance by running [`ss-down`](https://www.sovereign-stack.org/ss-down/).
-
-## backend nodes
-
-### Issuing BOLT12 Product Offers
-
 Here's how you create the BOLT12 Product Offer for Product-A, which costs 5sats/node/hour.
 
 `./lightning-cli.sh -k offer amount=5sat description="lnplay.live - 8 Node Environment" quantity_max=1344  issuer="lnplay.live"`
+
+## A script that culls instances (OPTIONAL)
+
+Each LXD project name includes the expiration date (in UNIX timestamp). So, a script needs to be created that runs every 10 minutes that identifies expired projects and prunes them from the LXD cluster. This involves de-provisioning the `lnplay` instance by running [`ss-down`](https://www.sovereign-stack.org/ss-down/).
 
 # Architecture Diagram
 
