@@ -1,7 +1,8 @@
 # lnplay.live requirements
 
 This is what we intend to accomplish as a MINIMUM VIABLE PRODUCT for the tabconf-2023 hackathon. `lnplay.live` is a public website allowing anyone to purchase (via lightning-only) an ephemeral regtest lightning environment that can be used to educate small bitcoin meetups, bitcoin conference attendees, board-rooms, etc. It's a fun an educational experience helpful in orange-pilling your target audience.
-# Product Definition
+# lnplay-frontend [lead: banterpanther]
+## Product Definition (owner: banterpanther)
 
 |PRODUCT_SKU|CLN_COUNT|REQUIRED/OPTIONAL|
 |---|---|---|
@@ -10,13 +11,13 @@ This is what we intend to accomplish as a MINIMUM VIABLE PRODUCT for the tabconf
 |C|32|OPTIONAL|
 |D|64|OPTIONAL|
 
-For the MVP, the backend will CALCULATE the expiration date of the deployment based on the AMOUNT_PAID (REQUIRED). Invoices associated with a particular BOLT12 Product SKU determines the CLN_COUNT (and thus VM sizing). These BOLT12 offers get embedded into the front-end during build time and are used internally only (i.e., the user never sees the BOLT12 offer). These Product Offers are used to fetch BOLT11 invoices using [`fetchinvoice`](https://docs.corelightning.org/reference/lightning-fetchinvoice)) from the backend CLN node, which are then shown to the user during checkout. The `[quantity]` field SHOULD be used to used to represent number of hours the instance should be running (MINIMUM 3 hours). Product customizations (OPTIONAL FOR MVP) may be passed to the provisioning script using the [payer_note] field in the transaction.
+Each product is defined by a BOLT12 offer which is used to fetch invoices. Paid invoices associated with a particular BOLT12 Product SKU determines the CLN_COUNT (and thus VM sizing). These BOLT12 "Product Offers" get embedded into the front-end during build time and are used internally only (i.e., the user never sees the BOLT12 offer). Product Offers are only used to fetch (with [`fetchinvoice`](https://docs.corelightning.org/reference/lightning-fetchinvoice)) BOLT11 invoices from the backend CLN node. 
 
-# lnplay-frontend
+Note: The `[quantity]` field SHOULD be used and is an integer representing ONE HOUR (recommended minimum is three hours). Product customizations (OPTIONAL FOR MVP) MAY be passed to the provisioning script using the [payer_note] field in the transaction (JSON expected).
 
 The front-end is a [lnmessage-enabled](https://github.com/aaronbarnardsound/lnmessage) PWA that interfaces with a backend core lightning node (CLN) over the `--experimental-websocket-port` (HTTP for local, 443/HTTPS/TLS-1.3 for remote hosts). Embedded in the front-end code is a well-known rune that authenticates client requests to the CLN node. The front-end application SHOULD accept this rune AND a list of BOLT12 offers at build-time if possible (see future work). Each BOLT12 Offer represents a Product SKU.
 
-OPTIONAL - the front-end MAY create a PDF containing connection QR codes encoding connection URLs. Upon payment, the user is redirected to domain.TLD/orders/preimage. They SHOULD be directed to store the URL in their in their password manager so they can reference the order later. 
+OPTIONAL Feature - When the connection information becomes available to the web app, it would be nice for the front-end web app to generate QR codes and or PDF printouts.  They SHOULD be directed to store the URL in their in their password manager so they can reference the order later. 
 
 ## Rune
 
@@ -26,11 +27,11 @@ A rune needs to be issued by a backend CLN node in accordance with least privile
 
 The backend consists of the following efforts:
 
-## infrastructure
+## Infrastructure (REQUIRED)
 
 Before the hackathon, a LXD cluster providing compute, memory, and storage will be provisioned and accessible at `backend.lnplay.live:8443` [LXD API](https://documentation.ubuntu.com/lxd/en/latest/search/?q=API&check_keywords=yes&area=default) (access is IP white-listed). The LXC client in the provisioning plugin accesses this service to create projects, provision VMs, and deploy [`lnplay`](https://github.com/farscapian/lnplay/tree/tabconf). This should be in place BEFORE the hackathon.
 
-## CLN Provisioning Plugin
+## CLN Provisioning Plugin (REQUIRED)
 
 A cln plugin written in bash with two primary functions:  
   
@@ -41,19 +42,19 @@ A cln plugin written in bash with two primary functions:
      iii) the plugin will spin up a new VM using [`ss-up`](https://www.sovereign-stack.org/ss-up/) on a remote LXD cluster using a custom environment file.
      iv) As a last step, the stores the connection strings in the CLN database as a JSON structure, retrievable using (b).
   
-  b) a rpcmethod `lnplaylive-orderstatus <pre_image>` that allows the frontend web app to check on the status of an order. This method would take as an argument the payment pre-image and return a JSON document containing connection strings for the deployment. The front-end can poll `lnplaylive-orderstatus` and display connection details as be become available.
+  b) a rpcmethod `lnplaylive-orderstatus <pre_image>` that allows the frontend web app to check on the status of an order. This method would take as an argument the payment pre-image and return a JSON document containing connection strings for the deployment. The front end can poll `lnplaylive-orderstatus` and display connection details it becomes available.
 
-## Integrate front-end into lnplay/tabconf2023
+## Integrate front-end into lnplay/tabconf2023 (REQUIRED)
 
-The front-end web app will need to be dockerized and an option added `DEPLOY_LNPLAYLIVE_PLUGIN=true` in `lnplay` for deploying the web-UI at the root of the app.
+The front-end web app will need to be dockerized and an option added `DEPLOY_LNPLAYLIVE_FRONTEND=true` in `lnplay` for deploying the web-UI at the root of the app.
 
-## Hosting for `lnplay.live`
+## Hosting for `lnplay.live` (REQUIRED)
 
-To serve the `lnplay.live` web app to the public, a VM will be created on AWS and `lnplay` will deployed to the VM with `DEPLOY_LNPLAYLIVE_PLUGIN=true`.
+To serve the `lnplay.live` web app to the public, a VM will be created on AWS and `lnplay` will deployed to the VM with `DEPLOY_LNPLAYLIVE_FRONTEND=true`.
 
 ## A script that culls instances (OPTIONAL)
 
-Each LXD project name includes the expiration date (in UNIX timestamp). So, a script needs to be created that runs every 10 minutes that identifies expired projects and prunes them away. This involves de-provisioning the `lnplay` instance by running [`ss-down`](https://www.sovereign-stack.org/ss-down/).
+Each LXD project name includes the expiration date (in UNIX timestamp). So, a script needs to be created that runs every 10 minutes that identifies expired projects and prunes them from the LXD cluster. This involves de-provisioning the `lnplay` instance by running [`ss-down`](https://www.sovereign-stack.org/ss-down/).
 
 # Architecture Diagram
 
@@ -67,7 +68,7 @@ Backend development requires `lnplay` deployed to a local docker engine. To get 
 
 # Future work
 
-* Implement [lightningaddress for bolt12](https://github.com/rustyrussell/bolt12address) on the backend, allowing the front-end to dynamically fetch the BOLT12 product offers using names (e.g., product-a@domain.tld). This results in the front-end being completely decoupled from the backend.
+* Implement [lightningaddress for bolt12](https://github.com/rustyrussell/bolt12address) on the backend, allowing the front-end to dynamically fetch the BOLT12 product offers using names (e.g., product-a@domain.tld). This results in the front-end being completely decoupled from the backend and eliminates the need for build-time paramemter in the frontend.
 * Generate QR codes from connnection strings, provided as a PDF.
 * Allow customer to submit custom branding for wallet and QR codes. 
 * monitor the load of your various remotes so the front-end webapp can display product availability.
