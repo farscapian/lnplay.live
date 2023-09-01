@@ -19,6 +19,17 @@ Once the BOLT11 invoice is paid, the user should be directed to a unique URL bas
 
 > OPTIONAL Feature - When the connection information becomes available to the web app, it would be nice for the front-end web app to generate QR codes and or PDF printouts. 
 
+## BOLT12 Product Offers
+
+Here's how you create the BOLT12 Product Offers:
+
+```bash
+lightning-cli -k offer amount=5sat description="8 nodes" quantity_max=1344  issuer="lnplay.live"
+lightning-cli -k offer amount=6sat description="16 nodes" quantity_max=2688  issuer="lnplay.live"
+lightning-cli -k offer amount=7sat description="32 nodes" quantity_max=5376  issuer="lnplay.live"
+lightning-cli -k offer amount=8sat description="64 nodes" quantity_max=10752  issuer="lnplay.live"
+```
+
 # lnplay-frontend [captain: banterpanther]
 
 The front-end is a [lnmessage-enabled](https://github.com/aaronbarnardsound/lnmessage) PWA that interfaces with a backend core lightning node (CLN) over the `--experimental-websocket-port` (HTTP for local, 443/HTTPS/TLS-1.3 for remote hosts). Embedded in the front-end code is a well-known rune that authenticates client requests to the CLN node. The front-end application SHOULD accept this rune AND a list of BOLT12 offers at build-time if possible (see future work).
@@ -68,15 +79,6 @@ When creating the [BOLT12 Product Offers](https://docs.corelightning.org/referen
 Note: The `[quantity]` field is an integer representing ONE NODE HOUR (for 8 nodes running for 2 hour, quantity=16). 
 
 Note: Product customizations (OPTIONAL FOR MVP) MAY be passed to the provisioning script using the [payer_note] field `fetchinvoice` (JSON expected).
-
-Here's how you create the BOLT12 Product Offer for Product-A, which costs 5sats/node-hour.
-
-```bash
-lightning-cli -k offer amount=5sat description="8 nodes" quantity_max=1344  issuer="lnplay.live"
-lightning-cli -k offer amount=6sat description="16 nodes" quantity_max=2688  issuer="lnplay.live"
-lightning-cli -k offer amount=7sat description="32 nodes" quantity_max=5376  issuer="lnplay.live"
-lightning-cli -k offer amount=8sat description="64 nodes" quantity_max=10752  issuer="lnplay.live"
-```
 
 ## A script that culls instances (OPTIONAL)
 
