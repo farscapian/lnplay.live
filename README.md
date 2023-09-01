@@ -13,9 +13,15 @@ This is what we intend to accomplish as a MINIMUM VIABLE PRODUCT for the tabconf
 
 Each product is defined by a BOLT12 offer which is used to [fetch](https://docs.corelightning.org/reference/lightning-fetchinvoice) BOLT11 invoices used during checkout. Paid invoices associated with a particular BOLT12 Product SKU determines the CLN_COUNT (and thus VM sizing). These BOLT12 "Product Offers" get embedded into the front-end during build time and are used internally only (i.e., the user never sees the BOLT12 offer).
 
+```bash
 Note: Since the Product offers are issued using the [quantity_max] field, the [amount] in the `fetchinvoice` command must be multiplied accordingly.
+```
 
-OPTIONAL Feature - When the connection information becomes available to the web app, it would be nice for the front-end web app to generate QR codes and or PDF printouts.  They SHOULD be directed to store the URL in their in their password manager so they can reference the order later. 
+Once the BOLT11 invoice is paid, the user should be directed to a unique URL based on the transaction `pre_image`. They should be asked to store the URL in their in their password manager.
+
+
+
+OPTIONAL Feature - When the connection information becomes available to the web app, it would be nice for the front-end web app to generate QR codes and or PDF printouts. 
 
 # lnplay-frontend [captain: banterpanther]
 
@@ -32,9 +38,11 @@ A rune needs to be issued by a backend CLN node in accordance with least privile
 
 The backend consists of the following efforts:
 
-## Infrastructure (REQUIRED)
+## Infrastructure (REQUIRED) - aka 'cluster'
 
-Before the hackathon, a LXD cluster providing compute, memory, and storage will be provisioned and accessible at `backend.lnplay.live:8443` [LXD API](https://documentation.ubuntu.com/lxd/en/latest/search/?q=API&check_keywords=yes&area=default) (access is IP white-listed). The LXC client in the provisioning plugin accesses this service to create projects, provision VMs, and deploy [`lnplay`](https://github.com/farscapian/lnplay/tree/tabconf). This should be in place BEFORE the hackathon.
+A LXD cluster providing compute, memory, and storage is accessible at `lxdrmt00.lnplay.live:8443` [LXD API](https://documentation.ubuntu.com/lxd/en/latest/search/?q=API&check_keywords=yes&area=default) (access is IP white-listed). The LXC client in the provisioning plugin accesses this service to create projects, provision VMs, and deploy [`lnplay`](https://github.com/farscapian/lnplay/tree/tabconf).
+
+STATUS: PARTIALLY COMPLETED (service endpoint is in place, but cluster is one host at the moment)
 
 ## CLN Provisioning Plugin (REQUIRED)
 
@@ -42,12 +50,12 @@ A cln plugin written in bash with two primary functions:
   
   a) code that that gets [executed whenever a BOLT11 invoice is paid](https://docs.corelightning.org/docs/event-notifications). The plugin will determine if the payment is associated with known BOLT12 Product Offer ([example](https://github.com/daGoodenough/bolt12-prism/blob/main/prism-plugin.py)) representing product SKUs. If it is, the following occurs:
 
-     i) when the plugin runs for the first time, there may be no remotes available. These are passed in by setting environment variables and get created before the plugin continues. So a new remote gets created and the LXD client is switched to it.
-     ii) the plugin will create a new LXD project and switch to it. The project name includes the expiration date (in unix timestamp).
+     i) when running for the first, a new [remote](https://documentation.ubuntu.com/lxd/en/latest/reference/manpages/lxc/remote/#synopsis) will need to be created. This is achieved by passing in environment variables and/or using [docker secrets](https://docs.docker.com/compose/compose-file/compose-file-v3/#configs). Assuming the connection infomormation is correct and the remote cluster service is up, a new remote will be created and the LXD client will be switched to it.
+     ii) the plugin will create a new LXD [project](https://documentation.ubuntu.com/lxd/en/latest/projects/) and switch to it. The project name includes the expiration date (in unix timestamp).
      iii) the plugin will spin up a new VM using [`ss-up`](https://www.sovereign-stack.org/ss-up/) on a remote LXD cluster using a custom environment file.
      iv) As a last step, the stores the connection strings in the CLN database as a JSON structure, retrievable using (b).
   
-  b) a rpcmethod `lnplaylive-orderstatus <pre_image>` that allows the frontend web app to check on the status of an order. This method would take as an argument the payment pre-image and return a JSON document containing connection strings for the deployment. The front end can poll `lnplaylive-orderstatus` and display connection details it becomes available.
+  b) a rpcmethod `lnplaylive-orderstatus <pre_image>` that allows the frontend web app to check on the status of an order. This method would take as an argument the payment pre-image and return a JSON document containing connection strings for the deployment. The front end can poll `lnplaylive-orderstatus` and display connection strings when available.
 
 ## Integrate front-end into lnplay/tabconf2023 (REQUIRED)
 
@@ -55,25 +63,32 @@ The front-end web app will need to be dockerized and an option added `DEPLOY_LNP
 
 ## Hosting for `lnplay.live` (REQUIRED)
 
-To serve the `lnplay.live` web app to the public, a VM will be created on AWS and `lnplay` will deployed to the VM with `DEPLOY_LNPLAYLIVE_FRONTEND=true`. A backend deployment is not required for this function and SHOULD NOT be deployed.
+To serve the `lnplay.live` web app to the public, a VM will be created on AWS and `lnplay` will be deployed to the VM with `DEPLOY_LNPLAYLIVE_FRONTEND=true`. A backend deployment is not required for this function and SHOULD NOT be deployed.
 
 ### Issuing BOLT12 Offers (REQUIRED)
 
-When creating the [BOLT12 Product Offers](https://docs.corelightning.org/reference/lightning-offer), the amount should be set to the cost (in sats) per node per hour as specified in the Product Definition.
+When creating the [BOLT12 Product Offers](https://docs.corelightning.org/reference/lightning-offer), the amount should be set to the price (in sats per node per hour) as specified in the Product Definition.
 
-Note: The `[quantity]` field SHOULD be used and is an integer representing ONE HOUR (recommended minimum is three hours). Product customizations (OPTIONAL FOR MVP) MAY be passed to the provisioning script using the [payer_note] field in the transaction (JSON expected).
+Note: The `[quantity]` field is an integer representing ONE NODE HOUR (for 8 nodes running for 2 hour, quantity=16). 
+
+Note: Product customizations (OPTIONAL FOR MVP) MAY be passed to the provisioning script using the [payer_note] field `fetchinvoice` (JSON expected).
 
 Here's how you create the BOLT12 Product Offer for Product-A, which costs 5sats/node/hour.
 
-`./lightning-cli.sh -k offer amount=5sat description="lnplay.live - 8 Node Environment" quantity_max=1344  issuer="lnplay.live"`
+```bash
+lightning-cli -k offer amount=5sat description="8 nodes" quantity_max=1344  issuer="lnplay.live"
+lightning-cli -k offer amount=6sat description="16 nodes" quantity_max=2688  issuer="lnplay.live"
+lightning-cli -k offer amount=7sat description="32 nodes" quantity_max=5376  issuer="lnplay.live"
+lightning-cli -k offer amount=8sat description="64 nodes" quantity_max=10752  issuer="lnplay.live"
+```
 
 ## A script that culls instances (OPTIONAL)
 
-Each LXD project name includes the expiration date (in UNIX timestamp). So, a script needs to be created that runs every 10 minutes that identifies expired projects and prunes them from the LXD cluster. This involves de-provisioning the `lnplay` instance by running [`ss-down`](https://www.sovereign-stack.org/ss-down/).
+Each LXD project name includes the expiration date (in UNIX timestamp). So, a script needs to be created that runs every hour or so that identifies expired projects and prunes them from the LXD cluster. This involves de-provisioning the `lnplay` instance by running [`ss-down`](https://www.sovereign-stack.org/ss-down/).
 
 # Architecture Diagram
 
-![lnplay.live tabconf architecture](./lnplay-live-architecture.drawio1.png)
+![lnplay.live tabconf architecture](./lnplay-live_architecture.png)
 
 # Development Environment
 
