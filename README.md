@@ -1,6 +1,6 @@
 # lnplay.live requirements
 
-This is what we intend to accomplish as a MINIMUM VIABLE PRODUCT for the tabconf-2023 hackathon. `lnplay.live` is a public website allowing anyone to purchase (via lightning-only) an ephemeral regtest lightning environment that can be used to educate bitcoin meetups, bitcoin conferences, board-rooms, etc. It's a fun an educational experience helpful in orange-pilling your target audience.
+This is what we intend to accomplish as a MINIMUM VIABLE PRODUCT for the tabconf-2023 hackathon. `lnplay.live` is a public website allowing anyone to purchase (via lightning-only) an ephemeral regtest lightning environment called [`lnplay`](https://github.com/farscapian/lnplay) that can be used to educate bitcoin meetups, bitcoin conferences, board-rooms, etc. It's a fun an educational experience helpful in orange-pilling your target audience.
 
 # Product Definition
 
@@ -17,17 +17,17 @@ Each product is defined by a BOLT12 offer which is used to [fetch](https://docs.
 
 Once the BOLT11 invoice is paid, the user should be directed to a unique URL based on the transaction `pre_image`. They should be asked to store the URL in their in their password manager.
 
-> OPTIONAL Feature - When the connection information becomes available to the web app, it would be nice for the front-end web app to generate QR codes and or PDF printouts. 
+> OPTIONAL Feature - When the connection information becomes available to the web app, it would be nice for the front-end web app to generate QR codes and or PDF printouts.
 
 ## BOLT12 Product Offers
 
 Here's how you create the BOLT12 Product Offers:
 
 ```bash
-lightning-cli -k offer amount=5sat description="8 nodes" quantity_max=1344  issuer="lnplay.live"
-lightning-cli -k offer amount=6sat description="16 nodes" quantity_max=2688  issuer="lnplay.live"
-lightning-cli -k offer amount=7sat description="32 nodes" quantity_max=5376  issuer="lnplay.live"
-lightning-cli -k offer amount=8sat description="64 nodes" quantity_max=10752  issuer="lnplay.live"
+./lightning-cli.sh --id=1 -k offer amount=5sat description="8 node environment." quantity_max=1344  issuer="lnplay.live"
+./lightning-cli.sh --id=1 -k offer amount=6sat description="16 node environment." quantity_max=2688  issuer="lnplay.live"
+./lightning-cli.sh --id=1 -k offer amount=7sat description="32 node environment." quantity_max=5376  issuer="lnplay.live"
+./lightning-cli.sh --id=1 -k offer amount=8sat description="64 node environment." quantity_max=10752  issuer="lnplay.live"
 ```
 
 # lnplay-frontend [captain: banterpanther]
@@ -39,7 +39,7 @@ The front-end is a [lnmessage-enabled](https://github.com/aaronbarnardsound/lnme
 The frontend should have a section which describes the product offering and convinces potential customers to buy.
 ## Rune
 
-A rune needs to be issued by a backend CLN node in accordance with least privilege and should be rate-limited (admin rune OK for demo). This rune gets embedded in the front-end and is used for authenticating client requests to the backend websocket endpoint. Method authorization should be based on WHITELIST with the following methods: [`fetchinvoice`](https://docs.corelightning.org/reference/lightning-fetchinvoice) and [`waitinvoice`](https://docs.corelightning.org/reference/lightning-waitinvoice), and `lnplaylive-orderstatus`.
+A rate-limited rune and restricted rune needs to [be issued](https://github.com/farscapian/lnplay/blob/tabconf/get_rune.sh) by the back end (admin rune OK for demo). This rune gets embedded in the front-end and is used for authenticating client requests to the backend websocket endpoint. Method authorization should be based on WHITELIST with the following methods: [`fetchinvoice`](https://docs.corelightning.org/reference/lightning-fetchinvoice) and [`waitinvoice`](https://docs.corelightning.org/reference/lightning-waitinvoice), and `lnplaylive-orderstatus`.
 
 # lnplay-backend [captain: farscapian]
 
@@ -70,8 +70,7 @@ The front-end web app will need to be dockerized and an option added `DEPLOY_LNP
 
 ## Hosting for `lnplay.live` (REQUIRED)
 
-To serve the `lnplay.live` web app to the public, a VM will be created on AWS and `lnplay` will be deployed to the VM with `DEPLOY_LNPLAYLIVE_FRONTEND=true`. A backend deployment is not required for this function and SHOULD NOT be deployed.
-
+To serve the `lnplay.live` web app to the public, a VM will be created on AWS and `lnplay` will be deployed with `DEPLOY_LNPLAYLIVE_FRONTEND=true`.
 ### Issuing BOLT12 Offers (REQUIRED)
 
 When creating the [BOLT12 Product Offers](https://docs.corelightning.org/reference/lightning-offer), the amount should be set to the price (in sats per node-hour) as specified in the Product Definition.
@@ -90,14 +89,20 @@ Each LXD project name includes the expiration date (in UNIX timestamp). So, a sc
 
 # Development Environment
 
-Front-end developers can develop however they want. Polar is a good option usually for single-node setups. Another solution is running `lnplay` locally on your dev machine which exposes 5 core lightning nodes to your localhost (`ws://127.0.0.1:6001-6006`).
+## frontend
 
-Backend development requires `lnplay` deployed to a local docker engine. To get the code, run `git clone --recurse-submodules https://github.com/farscapian/lnplay ~/lnplay`. We will be working on the `tabconf` branch. Before making commits, do a `git pull`, then make your commits, then `git push` and let everyone know you made changes to `tabconf` branch.
+Front-end developers can develop however they want. Polar is usually a good choice when running docker. Also check out [this script](https://github.com/ElementsProject/lightning/blob/master/contrib/startup_regtest.sh) in the CLN repo. Another solution is running `lnplay` locally on your dev machine which exposes 5 core lightning nodes to your localhost (`ws://127.0.0.1:6001-6006`).
+
+Backend development requires [`lnplay`](https://github.com/farscapian/lnplay) deployed to a local docker engine. To get the code, run `git clone --recurse-submodules https://github.com/farscapian/lnplay ~/lnplay`. We will be working on the `tabconf` branch. 
+
+## backend
+
+Before making any commits, do a `git stash`, then `git pull`, `git stash pop` then make your commits, then `git push`. Let everyone know you made changes to `tabconf` branch so they can run `git pull`.
 
 # Future work
 
 * Implement [lightningaddress for bolt12](https://github.com/rustyrussell/bolt12address) on the backend, allowing the front-end to dynamically fetch the BOLT12 product offers using names (e.g., product-a@domain.tld). This results in the front-end being completely decoupled from the backend and eliminates the need for build-time paramemter in the frontend.
-* Generate QR codes from connnection strings, provided as a PDF.
-* Allow customer to submit custom branding for wallet and QR codes. 
+* Front end generates QR codes from connnection strings, provided as a PDF.
+* Allow customer to submit custom branding for wallet and QR codes.
 * monitor the load of your various remotes so the front-end webapp can display product availability.
-* Initial distribution of regtest funds could be configurable. Currently, we give each CLN node 100,000,000 sats (i.e., 1 rBTC). But we could also replicate the fiat system, or have a poisson distribution, etc. We could also distribute coins in a random way to simulate coin distribution in bitcoin.
+* Provides options on initial coin distribution. Currently, we give each CLN node 100,000,000 sats (i.e., 1 rBTC) (`COIN_DISTRIBUTION=egalitarian`). But we could also replicate the fiat system (`COIN_DISTRIBUTION=political`), or have a poisson distribution, etc. We could also distribute coins in a random way to simulate coin distribution in bitcoin (`COIN_DISTRIBUTION=pow`).
