@@ -22,27 +22,27 @@ The front-end is a [lnmessage-enabled](https://github.com/aaronbarnardsound/lnme
 ## Copy
 
 The frontend should have a section which describes the product offering and convinces potential customers to buy.
-## Rune
-
-A rate-limited rune and restricted rune needs to [be issued](https://github.com/farscapian/lnplay/blob/tabconf/get_rune.sh) by the back end (admin rune OK for demo). This rune gets embedded in the front-end and is used for authenticating client requests to the backend websocket endpoint. Method authorization should be whitelist rpc methods starting with `lnplaylive-`. The front-end application SHOULD accept this rune at build-time if possible (see future work).
 
 # lnplay-backend [captain: farscapian]
 
 The backend consists of the following efforts:
 
+## Rune
+
+A rate-limited rune and restricted rune needs to [be issued](https://github.com/farscapian/lnplay/blob/tabconf/get_rune.sh) by the back end (admin rune OK for demo). This rune gets embedded in the front-end and is used for authenticating client requests to the backend websocket endpoint. Method authorization should be whitelist rpc methods starting with `lnplaylive-`. The front-end application SHOULD accept this rune at build-time if possible.
+
 ## Infrastructure (REQUIRED) - aka 'cluster'
 
-A LXD cluster providing compute, memory, and storage is accessible at `lxdrmt00.lnplay.live:8443` [LXD API](https://documentation.ubuntu.com/lxd/en/latest/search/?q=API&check_keywords=yes&area=default) (access is IP white-listed). The LXC client in the provisioning plugin accesses this service to create projects, provision VMs, and deploy [`lnplay`](https://github.com/farscapian/lnplay/tree/tabconf).
+A LXD cluster providing compute, memory, networking, and storage is accessible at `lxdrmt00.lnplay.live:8443` [LXD API](https://documentation.ubuntu.com/lxd/en/latest/search/?q=API&check_keywords=yes&area=default) (access is IP white-listed). The LXC client in the provisioning plugin accesses this service to create projects, provision VMs, and deploy [`lnplay`](https://github.com/farscapian/lnplay/tree/tabconf). The provisioning process also requires SSH access to any VMs that get created.
 
-STATUS: PARTIALLY COMPLETED (service endpoint is in place, but cluster is one host at the moment)
-
+> Note: lnplay.live services scales by adding additional LXD clusters.
 ## CLN Provisioning Plugin (REQUIRED)
 
-A cln plugin ([click here to see the plugin](https://github.com/farscapian/lnplay.live-plugin)) written in bash with two primary functions:  
+[A cln plugin](https://github.com/farscapian/lnplay.live-plugin)) written in python having three main functions:  
   
-  a) an rpc method `lnplaylive-createorder -k node_count=8 hours=48` that returns a BOLT11 invoice that can be paid by the customer.
+  a) an rpc method `lnplaylive-createorder -k node_count=8 hours=48` that returns a BOLT11 invoice that can be paid by the customer. The API should accept at a minimum the node_count and number of hours the environment should be available.
 
-  b) an rpcmethod `lnplaylive-invoicestatus -k payment_type=bolt11 invoice_id=<invoice_id>` that returns the status of an invoice. The front end can poll this method and display connection strings when they become available. Additional deployment details become available AFTER an invoice is paid. Connection details become available AFTER provisioning scripts have completed 3-5 minutes.
+  b) an rpcmethod `lnplaylive-invoicestatus -k payment_type=bolt11 invoice_id=<invoice_id>` that returns the status of an invoice. The front end can poll this method and display connection strings when they become available. The deployment status becomes available AFTER the invoice is paid. Connection details become available AFTER provisioning scripts have completed (estimated 3-5 minutes).
 
   b) code that that gets [executed whenever a BOLT11 invoice is paid](https://docs.corelightning.org/docs/event-notifications#invoice_payment). The plugin will determine if the payment is associated with an `lnplay.live` order. If it is, the following occurs:
 
@@ -73,7 +73,7 @@ Backend development requires [`lnplay`](https://github.com/farscapian/lnplay) de
 
 ## backend development
 
-You will need to install docker engine locally on your dev machine. If you are uncomfortable running any of these scripts on your local machine, you can spin up a VM and do your development from there. [Here's a script](https://github.com/farscapian/lnplay/blob/tabconf/install.sh) that you can run on an Ubuntu machine that will install docker and get your machine all ready to go.
+You will need to install docker engine locally on your dev machine. If you are uncomfortable running any of these scripts on your local machine, you can spin up an Ubuntu 22.04 VM and do your development in there. [Here's a script](https://github.com/farscapian/lnplay/blob/tabconf/install.sh) that you can run on an Ubuntu machine that will install docker and get your machine all ready to go. You may need to refresh your group membership (newgrp) or restart your computer.
 
 Before making any commits, do a `git stash`, then `git pull`, `git stash pop` then make your commits, then `git push`. Let everyone know you made changes to `tabconf` branch so they can run `git pull`. Try to make small commits and only push commits you have tested.
 
