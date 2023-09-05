@@ -46,10 +46,10 @@ A LXD cluster providing compute, memory, networking, and storage is accessible a
 
   b) code that that gets [executed whenever a BOLT11 invoice is paid](https://docs.corelightning.org/docs/event-notifications#invoice_payment). The plugin will determine if the payment is associated with an `lnplay.live` order. If it is, the following occurs:
 
-     1. when running for the first time, a new [remote](https://documentation.ubuntu.com/lxd/en/latest/reference/manpages/lxc/remote/#synopsis) will need to be created. This is achieved by passing in environment variables and/or using [docker secrets](https://docs.docker.com/compose/compose-file/compose-file-v3/#configs). Assuming the LXD remote connection information is correct and the remote cluster service is up, a new remote will be created and the LXD client will be switched over to it.
-     2. the plugin will create a new LXD [project](https://documentation.ubuntu.com/lxd/en/latest/projects/) and switch to it. The project name includes the expiration date (in unix timestamp).
-     3. the plugin will spin up a new VM using [`ss-up`](https://www.sovereign-stack.org/ss-up/) on a remote LXD cluster using a custom environment file.
-     4. As a last step, the stores the connection strings in the CLN database as a JSON structure, retrievable using (b).
+  > 1. when running for the first time, a new [remote](https://documentation.ubuntu.com/lxd/en/latest/reference/manpages/lxc/remote/#synopsis) will need to be created. This is achieved by passing in environment variables and/or using [docker secrets](https://docs.docker.com/compose/compose-file/compose-file-v3/#configs). Assuming the LXD remote connection information is correct and the remote cluster service is up, a new remote will be created and the LXD client will be switched over to it.
+  > 2. the plugin will create a new LXD [project](https://documentation.ubuntu.com/lxd/en/latest/projects/) and switch to it. The project name includes the expiration date (in unix timestamp).
+  > 3. the plugin will spin up a new VM using [`ss-up`](https://www.sovereign-stack.org/ss-up/) on a remote LXD cluster using a custom environment file.
+  > 4. As a last step, the stores the connection strings in the CLN database as a JSON structure, retrievable using (b).
 
 ## Hosting for `lnplay.live` (REQUIRED)
 
