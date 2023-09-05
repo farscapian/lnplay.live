@@ -69,11 +69,13 @@ Each LXD project name includes the expiration date (in UNIX timestamp). So, a sc
 
 Front-end developers can develop however they want. Polar is usually a good choice when running docker. Also check out [this script](https://github.com/ElementsProject/lightning/blob/master/contrib/startup_regtest.sh) in the CLN repo. Another solution is running `lnplay` locally on your dev machine which exposes 5 core lightning nodes to your localhost (`ws://127.0.0.1:6001-6006`).
 
-Backend development requires [`lnplay`](https://github.com/farscapian/lnplay) deployed to a local docker engine. To get the code, run `git clone --recurse-submodules https://github.com/farscapian/lnplay ~/lnplay`. We will be working on the `tabconf` branch. 
-
 ## backend development
 
-You will need to install docker engine locally on your dev machine. If you are uncomfortable running any of these scripts on your local machine, you can spin up an Ubuntu 22.04 VM and do your development in there. [Here's a script](https://github.com/farscapian/lnplay/blob/tabconf/install.sh) that you can run on an Ubuntu machine that will install docker and get your machine all ready to go. You may need to refresh your group membership (newgrp) or restart your computer.
+Backend development requires [`lnplay`](https://github.com/farscapian/lnplay) deployed to a local docker engine. To get the code, run `git clone --recurse-submodules https://github.com/farscapian/lnplay ~/lnplay`. We will be working on the `tabconf` branch. 
+
+If you are not comfortable running these scripts on your machine, consider doing everything in a VM. An Ubuntu 22.04 VM usually does the trick! [Here's a script](https://github.com/farscapian/lnplay/blob/tabconf/install.sh) that you can run on an Ubuntu machine that will install docker and get your machine all ready to go. You may need to refresh your group membership (newgrp) or restart your computer.
+
+### making commits
 
 Before making any commits, do a `git stash`, then `git pull`, `git stash pop` then make your commits, then `git push`. Let everyone know you made changes to `tabconf` branch so they can run `git pull`. Try to make small commits and only push commits you have tested.
 
