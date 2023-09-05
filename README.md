@@ -38,13 +38,13 @@ A LXD cluster providing compute, memory, networking, and storage is accessible a
 > Note: lnplay.live services scales by adding additional LXD clusters.
 ## CLN Provisioning Plugin (REQUIRED)
 
-[A cln plugin](https://github.com/farscapian/lnplay.live-plugin)) written in python having three main functions:  
+[A cln plugin](https://github.com/farscapian/lnplay.live-plugin) written in python having three main functions:  
   
-  a) an rpc method `lnplaylive-createorder -k node_count=8 hours=48` that returns a BOLT11 invoice that can be paid by the customer. The API should accept at a minimum the node_count and number of hours the environment should be available.
+  a. an rpc method `lnplaylive-createorder -k node_count=8 hours=48` that returns a BOLT11 invoice that can be paid by the customer. The API should accept at a minimum the node_count and number of hours the environment should be available.
 
-  b) an rpcmethod `lnplaylive-invoicestatus -k payment_type=bolt11 invoice_id=<invoice_id>` that returns the status of an invoice. The front end can poll this method and display connection strings when they become available. The deployment status becomes available AFTER the invoice is paid. Connection details become available AFTER provisioning scripts have completed (estimated 3-5 minutes).
+  b. an rpcmethod `lnplaylive-invoicestatus -k payment_type=bolt11 invoice_id=<invoice_id>` that returns the status of an invoice. The front end can poll this method and display connection strings when they become available. The deployment status becomes available AFTER the invoice is paid. Connection details become available AFTER provisioning scripts have completed (estimated 3-5 minutes).
 
-  b) code that that gets [executed whenever a BOLT11 invoice is paid](https://docs.corelightning.org/docs/event-notifications#invoice_payment). The plugin will determine if the payment is associated with an `lnplay.live` order. If it is, the following occurs:
+  c. code that that gets [executed whenever a BOLT11 invoice is paid](https://docs.corelightning.org/docs/event-notifications#invoice_payment). The plugin will determine if the payment is associated with an `lnplay.live` order. If it is, the following occurs:
 
   > 1. when running for the first time, a new [remote](https://documentation.ubuntu.com/lxd/en/latest/reference/manpages/lxc/remote/#synopsis) will need to be created. This is achieved by passing in environment variables and/or using [docker secrets](https://docs.docker.com/compose/compose-file/compose-file-v3/#configs). Assuming the LXD remote connection information is correct and the remote cluster service is up, a new remote will be created and the LXD client will be switched over to it.
   > 2. the plugin will create a new LXD [project](https://documentation.ubuntu.com/lxd/en/latest/projects/) and switch to it. The project name includes the expiration date (in unix timestamp).
