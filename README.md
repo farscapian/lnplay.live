@@ -17,7 +17,7 @@ Once the BOLT11 invoice is paid, the user should be directed to a unique URL bas
 
 # lnplay-frontend [captain: banterpanther]
 
-The front-end is a [lnmessage-enabled](https://github.com/aaronbarnardsound/lnmessage) PWA that interfaces with a backend core lightning node (CLN) over the `--experimental-websocket-port` (HTTP for local, 443/HTTPS/TLS-1.3 for remote hosts). It's what you will when you visit `https://lnplay.live`.
+The front-end is a [lnmessage-enabled](https://github.com/aaronbarnardsound/lnmessage) PWA that interfaces with a backend core lightning node (CLN) over the `--experimental-websocket-port` (HTTP for local, 443/HTTPS/TLS-1.3 for remote hosts). It's what you will when you visit `https://lnplay.live`. The git repo [lives here](https://github.com/johngribbin/lnplay-frontend).
 
 ## Copy
 
