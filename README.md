@@ -38,7 +38,7 @@ A LXD cluster providing compute, memory, networking, and storage is accessible a
 > Note: lnplay.live services scales by adding additional LXD clusters.
 ## CLN Provisioning Plugin (REQUIRED)
 
-[A cln plugin](https://github.com/farscapian/lnplay.live-plugin) written in python having three main functions:  
+[A cln plugin](https://github.com/farscapian/lnplay/tree/tabconf/lnplay/clightning/cln-plugins/lnplaylive) written in python having three main functions:  
   
   a. an rpc method `lnplaylive-createorder -k node_count=8 hours=48` that returns a BOLT11 invoice that can be paid by the customer. The API should accept at a minimum the node_count and number of hours the environment should be available.
 
